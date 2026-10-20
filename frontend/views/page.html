@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SimplexLab | Investigación de Operaciones</title>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <meta name="api-url" content="{{API_URL}}" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <div class="mark">S</div>
+        <div>
+          <strong>SimplexLab</strong
+          ><small>UNIVERSIDAD MARIANO GÁLVEZ · GUATEMALA</small>
+        </div>
+      </div>
+      <div class="course">Investigación de Operaciones · Proyecto final</div>
+      <div id="user-menu" class="user-menu" hidden>
+        <span id="user-name"></span>
+        <button type="button" id="logout" class="btn secondary">
+          Cerrar sesión
+        </button>
+      </div>
+    </header>
+    <section id="auth-screen" class="wrap auth-wrap">
+      <div class="card auth-card">
+        <div class="cardhead">
+          <h1 id="auth-title">Iniciar sesión</h1>
+          <p id="auth-description">
+            Ingresa a SimplexLab para resolver y consultar tus problemas.
+          </p>
+        </div>
+        <div class="cardbody">
+          <p id="auth-loading" role="status">Comprobando tu sesión…</p>
+          <form id="auth-form" method="post" hidden>
+            <div id="register-name-field" class="field" hidden>
+              <label for="auth-name">Nombre</label>
+              <input
+                id="auth-name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                minlength="2"
+                maxlength="100"
+                disabled
+              />
+            </div>
+            <div class="field">
+              <label for="auth-email">Correo electrónico</label>
+              <input
+                id="auth-email"
+                name="email"
+                type="email"
+                autocomplete="username"
+                maxlength="254"
+                required
+              />
+            </div>
+            <div class="field">
+              <label for="auth-password">Contraseña</label>
+              <input
+                id="auth-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                maxlength="128"
+                required
+              />
+              <small id="password-help" class="notice" hidden
+                >Usa al menos 10 caracteres.</small
+              >
+            </div>
+            <div id="register-confirm-field" class="field" hidden>
+              <label for="auth-confirm">Confirmar contraseña</label>
+              <input
+                id="auth-confirm"
+                name="confirmation"
+                type="password"
+                autocomplete="new-password"
+                maxlength="128"
+                disabled
+              />
+            </div>
+            <p id="auth-error" class="form-message" role="alert"></p>
+            <button
+              id="auth-submit"
+              type="submit"
+              class="btn primary auth-submit"
+            >
+              Ingresar
+            </button>
+            <p class="auth-switch">
+              <span id="auth-switch-label">¿No tienes cuenta?</span>
+              <button id="auth-toggle" type="button" class="text-button">
+                Crear cuenta
+              </button>
+            </p>
+          </form>
+        </div>
+      </div>
+    </section>
+    <main id="application" class="wrap" hidden>
+      <div class="hero">
+        <div>
+          <h1>Optimizador de programación lineal</h1>
+          <p>
+            Resuelve problemas de maximización y minimización con el método
+            simplex de dos fases.
+          </p>
+        </div>
+        <div class="status" id="api-status" role="status">
+          ● Comprobando API…
+        </div>
+      </div>
+      <div class="layout">
+        <section>
+          <div class="card">
+            <div class="cardhead">
+              <h2>01 · Configuración del problema</h2>
+              <p>Define las variables, el objetivo y las restricciones.</p>
+            </div>
+            <div class="cardbody">
+              <div class="field">
+                <label>Tipo de optimización</label>
+                <div class="mode">
+                  <label
+                    ><input type="radio" name="mode" value="max" checked /><span
+                      >↑ Maximizar</span
+                    ></label
+                  ><label
+                    ><input type="radio" name="mode" value="min" /><span
+                      >↓ Minimizar</span
+                    ></label
+                  >
+                </div>
+              </div>
+              <div class="field">
+                <label>Número de variables</label
+                ><select id="vars">
+                  <option value="2">2 variables</option>
+                  <option value="3">3 variables</option>
+                  <option value="4">4 variables</option>
+                  <option value="5">5 variables</option>
+                  <option value="6">6 variables</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Función objetivo: Z =</label>
+                <div id="objective" class="coefs" style="--cols: 2"></div>
+              </div>
+              <div class="field">
+                <div class="subheading">Restricciones</div>
+                <div id="constraints"></div>
+                <button class="btn secondary" id="add" style="width: 100%">
+                  + Agregar restricción
+                </button>
+              </div>
+              <div class="actions">
+                <button class="btn primary" id="solve">
+                  ▶ Resolver problema</button
+                ><button class="btn secondary" id="example">
+                  Cargar ejemplo</button
+                ><button class="btn secondary" id="clear">Limpiar</button>
+              </div>
+              <div class="tip">
+                Los coeficientes pueden ser positivos, negativos o decimales. Se
+                asume que todas las variables son no negativas (xᵢ ≥ 0). Se
+                admiten restricciones ≤, ≥ e =.
+              </div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="card">
+            <div class="cardhead">
+              <h2>02 · Resultados del método simplex</h2>
+              <p>
+                Solución óptima, valor de las variables y procedimiento tabular.
+              </p>
+            </div>
+            <div id="save-status" role="status" aria-live="polite"></div>
+            <div id="results" aria-live="polite">
+              <div class="result-empty">
+                <div class="graphic">▦</div>
+                <h3>Listo para optimizar</h3>
+                <p>
+                  Introduce tu función objetivo y tus restricciones, o carga un
+                  ejemplo, y pulsa <b>Resolver problema</b>.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="cardhead">
+              <h2>03 · Cómo funciona</h2>
+              <p>
+                PHP presenta la interfaz; FastAPI resuelve el modelo y MySQL
+                almacena el historial.
+              </p>
+            </div>
+            <div class="cardbody">
+              <div class="notice">
+                1. Convierte las restricciones en ecuaciones con variables de
+                holgura, exceso y artificiales, según corresponda.<br /><br />2.
+                Aplica la fase I cuando se necesitan variables artificiales para
+                obtener una base inicial factible.<br /><br />3. Ejecuta pivotes
+                simplex y registra cada tabla hasta hallar el óptimo o
+                diagnosticar inviabilidad o no acotación.
+              </div>
+            </div>
+          </div>
+          <div class="card" id="history-card">
+            <div class="cardhead">
+              <h2>04 · Historial en MySQL</h2>
+              <p>
+                Historial compartido de usuarios registrados: últimos 20
+                problemas. Abre uno para recuperar su modelo y sus tablas.
+              </p>
+            </div>
+            <div class="cardbody">
+              <button type="button" id="refresh-history" class="btn secondary">
+                Actualizar historial
+              </button>
+              <div id="history" aria-live="polite">Cargando historial…</div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <section class="below">
+        <h2>Organización sugerida para 5 integrantes</h2>
+        <p>
+          Cada módulo tiene un responsable principal y una evidencia comprobable
+          para la ficha individual.
+        </p>
+        <div class="team">
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 01</span>
+            <h3>Interfaz web / UX</h3>
+            <p>
+              Vistas PHP, HTML/CSS y formularios responsivos y validación
+              visual. Evidencia: pantallas funcionales.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 02</span>
+            <h3>Motor simplex</h3>
+            <p>
+              API en Python/FastAPI, algoritmo de pivoteo y optimización y
+              detección de casos especiales. Evidencia: solucionador y pruebas.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 03</span>
+            <h3>Modelo y validaciones</h3>
+            <p>
+              Modelo MySQL, historial y validación de coeficientes y
+              restricciones. Evidencia: casos válidos e inválidos.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 04</span>
+            <h3>Tablas y resultados</h3>
+            <p>
+              Iteraciones, variable entrante/saliente y resumen de solución.
+              Evidencia: tablas correctas.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 05</span>
+            <h3>Pruebas y documentación</h3>
+            <p>
+              Casos de prueba, manual de usuario, pruebas de aceptación e
+              integración. Evidencia: documentación y demostración.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div>
+        <strong>SimplexLab</strong>
+        <address>
+          7ª calle 25-55, Boulevard El Naranjo, zona 4 de Mixco.
+        </address>
+        <p>Telefono de Contacto : <a href="tel:24567890">24567890</a></p>
+      </div>
+      <button type="button" id="report-open" class="btn secondary" hidden>
+        Reportar un problema
+      </button>
+    </footer>
+    <dialog
+      id="report-dialog"
+      class="report-dialog"
+      aria-labelledby="report-title"
+    >
+      <div class="dialog-heading">
+        <h2 id="report-title">Reportar un problema</h2>
+        <button
+          id="report-close"
+          type="button"
+          class="btn secondary"
+          aria-label="Cerrar reporte"
+        >
+          Cerrar
+        </button>
+      </div>
+      <p>
+        Describe lo que ocurrió. Abriremos tu aplicación de correo con el
+        reporte dirigido a <strong>alvizures1024@gmail.com</strong>.
+      </p>
+      <form id="report-form">
+        <div class="field">
+          <label for="report-subject">Asunto</label
+          ><input
+            id="report-subject"
+            type="text"
+            minlength="5"
+            maxlength="100"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="report-message">¿Qué problema tuviste?</label
+          ><textarea
+            id="report-message"
+            rows="6"
+            minlength="10"
+            maxlength="1500"
+            placeholder="Indica qué estabas haciendo, qué pasó y qué esperabas que ocurriera."
+            required
+          ></textarea>
+        </div>
+        <p class="notice">
+          No incluyas contraseñas ni información privada. Revisa el mensaje en
+          tu correo y pulsa Enviar para completar el reporte.
+        </p>
+        <p
+          id="report-status"
+          class="form-message"
+          role="status"
+          aria-live="polite"
+        ></p>
+        <button type="submit" class="btn primary">
+          Continuar en mi correo
+        </button>
+        <a id="report-mail-link" class="mail-link" hidden
+          >Volver a abrir el correo preparado</a
+        >
+      </form>
+    </dialog>
+    <script src="assets/js/export-csv.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
+    <script src="assets/js/api.js" defer></script>
+    <script src="assets/js/report.js" defer></script>
+  </body>
+</html>

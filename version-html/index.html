@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SimplexLab | Investigación de Operaciones</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <div class="mark">S</div>
+        <div>
+          <strong>SimplexLab</strong
+          ><small>UNIVERSIDAD MARIANO GÁLVEZ · GUATEMALA</small>
+        </div>
+      </div>
+      <div class="course">Investigación de Operaciones · Proyecto final</div>
+    </header>
+    <main class="wrap">
+      <div class="hero">
+        <div>
+          <h1>Optimizador de programación lineal</h1>
+          <p>
+            Resuelve problemas de maximización y minimización con el método
+            simplex de dos fases.
+          </p>
+        </div>
+        <div class="status">● Sistema funcional</div>
+      </div>
+      <div class="layout">
+        <section>
+          <div class="card">
+            <div class="cardhead">
+              <h2>01 · Configuración del problema</h2>
+              <p>Define las variables, el objetivo y las restricciones.</p>
+            </div>
+            <div class="cardbody">
+              <div class="field">
+                <label>Tipo de optimización</label>
+                <div class="mode">
+                  <label
+                    ><input type="radio" name="mode" value="max" checked /><span
+                      >↑ Maximizar</span
+                    ></label
+                  ><label
+                    ><input type="radio" name="mode" value="min" /><span
+                      >↓ Minimizar</span
+                    ></label
+                  >
+                </div>
+              </div>
+              <div class="field">
+                <label>Número de variables</label
+                ><select id="vars">
+                  <option value="2">2 variables</option>
+                  <option value="3">3 variables</option>
+                  <option value="4">4 variables</option>
+                  <option value="5">5 variables</option>
+                  <option value="6">6 variables</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Función objetivo: Z =</label>
+                <div id="objective" class="coefs" style="--cols: 2"></div>
+              </div>
+              <div class="field">
+                <div class="subheading">Restricciones</div>
+                <div id="constraints"></div>
+                <button class="btn secondary" id="add" style="width: 100%">
+                  + Agregar restricción
+                </button>
+              </div>
+              <div class="actions">
+                <button class="btn primary" id="solve">
+                  ▶ Resolver problema</button
+                ><button class="btn secondary" id="example">
+                  Cargar ejemplo</button
+                ><button class="btn secondary" id="clear">Limpiar</button>
+              </div>
+              <div class="tip">
+                Los coeficientes pueden ser positivos, negativos o decimales. Se
+                asume que todas las variables son no negativas (xᵢ ≥ 0). Se
+                admiten restricciones ≤, ≥ e =.
+              </div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="card">
+            <div class="cardhead">
+              <h2>02 · Resultados del método simplex</h2>
+              <p>
+                Solución óptima, valor de las variables y procedimiento tabular.
+              </p>
+            </div>
+            <div id="results">
+              <div class="result-empty">
+                <div class="graphic">▦</div>
+                <h3>Listo para optimizar</h3>
+                <p>
+                  Introduce tu función objetivo y tus restricciones, o carga un
+                  ejemplo, y pulsa <b>Resolver problema</b>.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="cardhead">
+              <h2>03 · Cómo funciona</h2>
+              <p>Proceso de resolución implementado en JavaScript.</p>
+            </div>
+            <div class="cardbody">
+              <div class="notice">
+                1. Convierte las restricciones en ecuaciones con variables de
+                holgura, exceso y artificiales, según corresponda.<br /><br />2.
+                Aplica la fase I cuando se necesitan variables artificiales para
+                obtener una base inicial factible.<br /><br />3. Ejecuta pivotes
+                simplex y registra cada tabla hasta hallar el óptimo o
+                diagnosticar inviabilidad o no acotación.
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <section class="below">
+        <h2>Organización sugerida para 5 integrantes</h2>
+        <p>
+          Cada módulo tiene un responsable principal y una evidencia comprobable
+          para la ficha individual.
+        </p>
+        <div class="team">
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 01</span>
+            <h3>Interfaz web / UX</h3>
+            <p>
+              Maquetación HTML/CSS, formularios responsivos y validación visual.
+              Evidencia: pantallas funcionales.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 02</span>
+            <h3>Motor simplex</h3>
+            <p>
+              Algoritmo de pivoteo, optimización y detección de casos
+              especiales. Evidencia: solucionador y pruebas.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 03</span>
+            <h3>Modelo y validaciones</h3>
+            <p>
+              Captura de coeficientes, restricciones y errores. Evidencia: casos
+              válidos e inválidos.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 04</span>
+            <h3>Tablas y resultados</h3>
+            <p>
+              Iteraciones, variable entrante/saliente y resumen de solución.
+              Evidencia: tablas correctas.
+            </p>
+          </div>
+          <div class="teamcard">
+            <span class="number">INTEGRANTE 05</span>
+            <h3>Pruebas y documentación</h3>
+            <p>
+              Casos de prueba, manual de usuario, pruebas de aceptación e
+              integración. Evidencia: documentación y demostración.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div>
+        <strong>SimplexLab</strong>
+        <address>
+          7ª calle 25-55, Boulevard El Naranjo, zona 4 de Mixco.
+        </address>
+        <p>Telefono de Contacto : <a href="tel:24567890">24567890</a></p>
+      </div>
+      <a
+        class="btn secondary"
+        href="mailto:alvizures1024@gmail.com?subject=Reporte%20de%20problema%20en%20SimplexLab"
+        >Reportar un problema</a
+      >
+    </footer>
+    <script src="js/export-csv.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </body>
+</html>

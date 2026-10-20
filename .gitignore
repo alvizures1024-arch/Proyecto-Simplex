@@ -1,0 +1,13 @@
+.env
+backend/.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+node_modules/
+database/backups/
+artifacts/
+# Archivos locales de credenciales y exportaciones.
+*.pem
+*.key
