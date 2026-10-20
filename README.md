@@ -1,6 +1,147 @@
 # SimplexLab: PHP + FastAPI + MySQL
 
-Adaptación del archivo `PRESENTACION.html`. Conserva el diseño, el ejemplo original, las tablas por iteración, la impresión y el método simplex de dos fases.
+Aplicación web académica para resolver problemas de programación lineal de maximización y minimización mediante el método simplex de dos fases. Incluye frontend PHP, API en Python con FastAPI, base de datos MySQL, registro e inicio de sesión, historial compartido, tablas por iteración y exportación a CSV.
+
+Parte del diseño de `PRESENTACION.html` y también incluye una versión HTML/CSS/JavaScript independiente para demostraciones sin servidor.
+
+## Instalación local en Windows
+
+Esta guía permite ejecutar el proyecto completo en tu computadora: PHP sirve la interfaz en el puerto **8080**, FastAPI resuelve los modelos en el puerto **8000** y MySQL guarda las cuentas, sesiones y problemas. Mantén MySQL iniciado y las dos terminales abiertas mientras uses la aplicación.
+
+### 1. Instalar los requisitos
+
+| Herramienta | Versión requerida | Uso |
+| --- | --- | --- |
+| Git | Disponible en la terminal | Descargar el proyecto |
+| Python | 3.11 o posterior | Ejecutar FastAPI y el método simplex |
+| PHP | 8.2 o posterior | Servir la interfaz web |
+| MySQL | 8.0 o posterior | Almacenar cuentas, sesiones e historial |
+| MySQL Workbench | Opcional | Ejecutar el script SQL con una interfaz gráfica |
+
+Git, Python y PHP deben estar disponibles en el PATH. Compruébalo en PowerShell:
+
+```powershell
+git --version
+python --version
+php --version
+```
+
+Puedes usar Apache/XAMPP para PHP, seleccionando `frontend/public` como raíz del sitio; los pasos siguientes utilizan el servidor integrado de PHP. Node.js no es necesario para ejecutar la aplicación; sólo se usa en las pruebas opcionales del navegador.
+
+### 2. Descargar el proyecto
+
+```powershell
+git clone https://github.com/alvizures1024-arch/Proyecto-Simplex.git
+cd Proyecto-Simplex
+```
+
+También puedes descargar **Code → Download ZIP** desde GitHub, extraerlo y abrir una terminal dentro de la carpeta que contiene este README.
+
+### 3. Crear la base de datos
+
+Inicia el servicio MySQL. En MySQL Workbench, conéctate con tu cuenta administradora, abre `database/schema.sql` y ejecuta el script completo. Se crean la base **simplexlab** y las tablas `problemas`, `usuarios`, `sesiones` y `sesiones_revocadas`.
+
+Después ejecuta este SQL con la misma cuenta administradora, reemplazando la contraseña de ejemplo por una propia:
+
+```sql
+CREATE USER IF NOT EXISTS 'simplex'@'localhost'
+IDENTIFIED BY 'change_this_local_password';
+GRANT SELECT, INSERT, CREATE, INDEX ON simplexlab.* TO 'simplex'@'localhost';
+```
+
+Si el usuario `simplex` ya existe, utiliza su contraseña actual al configurar el backend; `CREATE USER IF NOT EXISTS` no cambia su contraseña. Si tu servidor requiere una cuenta específica para conexiones TCP, configura también el usuario y permisos para `'simplex'@'127.0.0.1'`.
+
+El script SQL incluido contiene la estructura de las tablas; no incluye las cuentas, sesiones ni datos de ninguna instalación anterior. En una instalación nueva no debes ejecutar las migraciones de nombres antiguos.
+
+### 4. Preparar Python y configurar MySQL
+
+Desde la raíz del proyecto:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+Copy-Item backend/.env.example backend/.env
+```
+
+Si `.venv` ya existe, omite su creación y utiliza su intérprete. Abre `backend/.env` y configura la conexión con la misma contraseña asignada al usuario MySQL:
+
+```dotenv
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=simplexlab
+DB_USER=simplex
+DB_PASSWORD=change_this_local_password
+CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080
+COOKIE_SECURE=false
+```
+
+Sustituye `change_this_local_password` por tu contraseña real. El archivo `backend/.env` es local y está excluido de Git. No necesitas activar el entorno virtual ni modificar la política de ejecución de PowerShell.
+
+### 5. Iniciar el backend — terminal 1
+
+Desde la raíz del proyecto ejecuta:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
+```
+
+Déjalo ejecutándose. Puedes abrir la documentación en <http://localhost:8000/docs>.
+
+### 6. Iniciar el frontend — terminal 2
+
+Abre otra terminal en la raíz del proyecto:
+
+```powershell
+$env:API_URL = 'http://localhost:8000'
+php -S localhost:8080 -t frontend/public
+```
+
+Déjala abierta y entra a **<http://localhost:8080>**. No abras `index.php` directamente como archivo.
+
+### 7. Crear una cuenta y comprobar la instalación
+
+1. Pulsa **Crear cuenta** y registra tu nombre, correo y una contraseña de al menos 10 caracteres.
+2. Al ingresar, comprueba que aparezca **API y MySQL disponibles**.
+3. Pulsa **Cargar ejemplo**. El resultado esperado es **x1 = 2, x2 = 6 y Z = 36**.
+4. Confirma que el problema se guardó y vuelve a abrirlo desde el historial.
+5. Prueba **Exportar CSV** para descargar el modelo y sus resultados.
+
+Las cuentas de acceso a SimplexLab se crean desde la interfaz y son distintas del usuario MySQL `simplex`. El repositorio no proporciona una cuenta de acceso predeterminada.
+
+Para comprobar la conexión desde PowerShell:
+
+```powershell
+Invoke-RestMethod http://localhost:8000/api/health
+```
+
+Debe devolver `status: ok` y `database: mysql`. Para detener los servidores, pulsa **Ctrl+C** en cada terminal. En ejecuciones posteriores basta con iniciar MySQL y repetir los pasos 5 y 6; no necesitas volver a crear la base ni instalar dependencias.
+
+### Solución de problemas de instalación
+
+| Problema | Qué revisar |
+| --- | --- |
+| Python, PHP o Git no se reconoce | Instala la herramienta y agrégala al PATH; abre una terminal nueva. |
+| No se puede conectar con FastAPI | Deja ejecutándose la terminal 1 y comprueba el puerto 8000. |
+| API disponible, MySQL pendiente | Inicia MySQL y revisa las credenciales de `backend/.env`. |
+| `Unknown database 'simplexlab'` | Ejecuta `database/schema.sql` con tu cuenta administradora. |
+| `Access denied` en MySQL | Comprueba usuario, contraseña y permisos en el paso 3. |
+| El puerto ya está en uso | Comprueba si ya existe otra instancia del servidor y utiliza esa instancia o ciérrala antes de iniciar otra. |
+| Regresa al login después de ingresar | Usa `localhost` para frontend y backend; conserva `COOKIE_SECURE=false` en HTTP local. |
+
+### Error al importar `ArgsKwargs` o `pydantic_core`
+
+No reutilices un entorno virtual con una versión diferente de Python. Ejecutar `python -m venv .venv` sobre una carpeta existente puede conservar paquetes binarios de la versión anterior. Por ejemplo, un paquete `cp312` corresponde a Python 3.12 y no sirve para Python 3.14.
+
+Si el entorno ya existe, omite el paso de creación y comprueba su intérprete con `.\.venv\Scripts\python.exe --version`. Si cambiaste de versión de Python, detén FastAPI con Ctrl+C y reinstala las dependencias con el intérprete actual:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install --upgrade --force-reinstall --no-cache-dir -r backend/requirements-dev.txt scipy
+.\.venv\Scripts\python.exe -m pip check
+```
+
+Este comando también reinstala las dependencias opcionales de pruebas que se incluyeron durante la verificación del proyecto.
+
+`API_URL` es una variable de entorno de PHP y una dirección accesible **desde el navegador**. Si cambias el origen o el puerto del frontend, agrégalo a `CORS_ORIGINS` en `backend/.env` y reinicia FastAPI. El archivo `.env` de la raíz lo utiliza Docker Compose; el de `backend/` se utiliza al ejecutar Python localmente. No contienen las mismas variables.
 
 ## Ingresar y reportar problemas
 
@@ -46,7 +187,7 @@ La versión independiente se abre directamente con `version-html/index.html`; ca
 
 Después de resolver un problema o abrirlo desde el historial, pulsa **Exportar CSV** al final de los resultados. El archivo incluye el tipo de optimización, la función objetivo, las restricciones, el estado, la solución y todas las tablas simplex calculadas. También permite exportar los diagnósticos de inviabilidad o no acotación. La descarga usa UTF-8 con BOM, encabezados en español y números sin redondear para conservar precisión y tildes en Excel. Si modificas el formulario, el archivo sigue correspondiendo al resultado mostrado hasta que vuelvas a resolver. El botón también está disponible en la versión HTML independiente.
 
-## Opción 1: ejecutar con Docker
+## Alternativa: ejecutar localmente con Docker
 
 Requisitos: Docker Desktop iniciado, con contenedores Linux y Docker Compose.
 
@@ -70,59 +211,6 @@ docker compose down
 ```
 
 `down` conserva los datos del volumen. Cambiar las contraseñas de `.env` después de inicializar MySQL no cambia las credenciales de los usuarios ya creados: actualízalas dentro de MySQL también.
-
-## Opción 2: ejecutar localmente
-
-Requisitos: Python 3.11 o posterior, PHP 8.2 o posterior y MySQL 8.0 o posterior. También sirve Apache/XAMPP para PHP; selecciona `frontend/public` como raíz del sitio.
-
-### 1. Preparar MySQL
-
-Conéctate como administrador mediante MySQL Workbench o el cliente `mysql` y ejecuta `database/schema.sql`. Crea un usuario para la aplicación (sustituye la contraseña de ejemplo por una propia):
-
-```sql
-CREATE USER IF NOT EXISTS 'simplex'@'localhost' IDENTIFIED BY 'change_this_local_password';
-GRANT SELECT, INSERT, CREATE ON simplexlab.* TO 'simplex'@'localhost';
-```
-
-Si el servidor exige una cuenta específica para conexiones TCP, crea los mismos permisos para `'simplex'@'127.0.0.1'`. El backend crea la tabla cuando no existe, pero la base de datos y el usuario deben existir antes de iniciar.
-
-### 2. Preparar y ejecutar FastAPI
-
-Desde la raíz del proyecto:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
-Copy-Item backend/.env.example backend/.env
-# Edita backend/.env con tus credenciales de MySQL.
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
-```
-
-### 3. Ejecutar PHP
-
-En otra terminal, desde la raíz:
-
-```powershell
-$env:API_URL = 'http://localhost:8000'
-php -S localhost:8080 -t frontend/public
-```
-
-Abre <http://localhost:8080>. Pulsa **Cargar ejemplo**: el resultado esperado es **x1 = 2, x2 = 6, Z = 36**. El aviso sobre el resultado confirma si se guardó en MySQL y el historial permite volver a abrirlo.
-
-### Error al importar `ArgsKwargs` o `pydantic_core`
-
-No reutilices un entorno virtual con una versión diferente de Python. Ejecutar `python -m venv .venv` sobre una carpeta existente puede conservar paquetes binarios de la versión anterior. Por ejemplo, un paquete `cp312` corresponde a Python 3.12 y no sirve para Python 3.14.
-
-Si el entorno ya existe, omite el paso de creación y comprueba su intérprete con `.\.venv\Scripts\python.exe --version`. Si cambiaste de versión de Python, detén FastAPI con Ctrl+C y reinstala las dependencias con el intérprete actual:
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install --upgrade --force-reinstall --no-cache-dir -r backend/requirements-dev.txt scipy
-.\.venv\Scripts\python.exe -m pip check
-```
-
-Este comando también reinstala las dependencias opcionales de pruebas que se incluyeron durante la verificación del proyecto.
-
-`API_URL` es una variable de entorno de PHP y una dirección accesible **desde el navegador**. Si cambias el origen o el puerto del frontend, agrégalo a `CORS_ORIGINS` en `backend/.env` y reinicia FastAPI. El archivo `.env` de la raíz lo utiliza Docker Compose; el de `backend/` se utiliza al ejecutar Python localmente. No contienen las mismas variables.
 
 ## API
 
